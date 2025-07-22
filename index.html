@@ -2,69 +2,73 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Cari Kode</title>
+  <title>ASETLINK</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px;
-    }
-    input {
-      padding: 10px;
-      font-size: 18px;
-      width: 300px;
-      margin-bottom: 20px;
-      border-radius: 6px;
-      border: none;
-    }
-    #result {
-      font-size: 20px;
-      color: #0f0;
-    }
+    body { font-family: sans-serif; padding: 20px; background: #121212; color: white; }
+    input { padding: 10px; width: 100%; font-size: 16px; margin-bottom: 20px; background: #222; color: white; border: none; border-radius: 5px; }
+    .result { margin-top: 20px; }
+    .item { padding: 10px; background: #1e1e1e; margin-bottom: 10px; border-left: 5px solid #00ffa2; border-radius: 5px; }
+    a { color: #00ffa2; text-decoration: none; }
   </style>
 </head>
 <body>
-  <h1>Cari Kode Video</h1>
-  <input type="text" id="search" placeholder="Masukkan kode (misal: ABP-123)" />
-  <div id="result">Menunggu input...</div>
 
-  <script>
-    const csvUrl = "https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vTJP0ECvwXf-WE0dUzqZ-kiXL3pAwZULAXeBBKDTEiRBOBWyS9vEnPbC6fi_R2Pl55pmQo8ZL4Lt9mE/pub?output=csv";
+<h2>ASETLINK Finder</h2>
+<input type="text" id="search" placeholder="Cari kode atau judul...">
+<div class="result" id="result">Silakan masukkan kode atau judul di atas.</div>
 
-    let database = [];
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFl8lDZYVTd3xNTxxdDICGkP7BfRtZqwzxIUp1vmjQM-V4M7OdZmON3bOAFA-rwQW8UsGiHPxPBbqs/pub?output=csv";
 
-    // Ambil data CSV
-    fetch(csvUrl)
-      .then(res => res.text())
-      .then(text => {
-        const rows = text.trim().split('\n');
-        database = rows.map(row => row.split(','));
-      })
-      .catch(err => {
-        document.getElementById('result').innerText = "Gagal mengambil data.";
-        console.error(err);
-      });
+let data = [];
 
-    // Fungsi pencarian
-    document.getElementById('search').addEventListener('input', () => {
-      const query = document.getElementById('search').value.trim().toUpperCase();
-      const resultDiv = document.getElementById('result');
-      if (!query) {
-        resultDiv.innerText = "Menunggu input...";
-        return;
-      }
+function normalize(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]/gi, '');
+}
 
-      const match = database.find(row => row[0].toUpperCase().includes(query));
-      if (match) {
-        resultDiv.innerHTML = `<b>${match[0]}</b><br><a href="${match[1]}" target="_blank" style="color:cyan">${match[1]}</a>`;
-      } else {
-        resultDiv.innerText = "Tidak ditemukan.";
-      }
+fetch(sheetURL)
+  .then(res => res.text())
+  .then(text => {
+    const rows = text.trim().split("\n").slice(1); // buang header
+    data = rows.map(row => {
+      const [judul, link] = row.split(",");
+      return { judul: judul.trim(), link: link.trim() };
     });
-  </script>
+  });
+
+document.getElementById("search").addEventListener("input", function() {
+  const keyword = this.value.trim().toLowerCase();
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerHTML = '';
+
+  if (keyword === '') {
+    resultDiv.innerHTML = 'Silakan masukkan kode atau judul di atas.';
+    return;
+  }
+
+  const found = data.filter(item =>
+    item.judul.toLowerCase().includes(keyword)
+  );
+
+  if (found.length > 0) {
+    found.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+      resultDiv.appendChild(div);
+    });
+  } else {
+    resultDiv.innerHTML = '<i>Tidak ditemukan. Rekomendasi:</i><br>';
+    const rekomendasi = data.slice(0, 5); // ambil 5 data awal saja
+    rekomendasi.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+      resultDiv.appendChild(div);
+    });
+  }
+});
+</script>
+
 </body>
 </html>
