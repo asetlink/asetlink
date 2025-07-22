@@ -1,39 +1,17 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ASETLINK DATA</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #0f0;
-      padding: 20px;
-    }
-    h1 {
-      color: #0f0;
-    }
-    .data-item {
-      border-bottom: 1px solid #333;
-      padding: 8px 0;
-    }
-  </style>
-</head>
-<body>
-  <h1>Data dari Google Sheet</h1>
-  <div id="output">Memuat data...</div>
+<script>
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFl8lDZYVTd3xNTxxdDICGkP7BfRtZqwzxIUp1vmjQM-V4M7OdZmON3bOAFA-rwQW8UsGiHPxPBbqs/pub?output=csv";
 
-  <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFl8lDZYVTd3xNTxxdDICGkP7BfRtZqwzxIUp1vmjQM-V4M7OdZmON3bOAFA-rwQW8UsGiHPxPBbqs/pub?output=csv";
-
-    fetch(csvUrl)
-      .then(response => response.text())
-      .then(data => {
-        const rows = data.split("\n").map(row => row.split(","));
-        let output = '';
-        for (let i = 1; i < rows.length; i++) {
-          const [kode, judul, link] = rows[i];
+  fetch(csvUrl)
+    .then(response => response.text())
+    .then(text => {
+      const rows = text.trim().split("\n").slice(1); // Hilangkan header
+      let output = '';
+      for (const row of rows) {
+        const columns = row.split(",");
+        if (columns.length >= 3) {
+          const kode = columns[0];
+          const judul = columns[1];
+          const link = columns.slice(2).join(",").trim(); // Gabungkan sisa jadi satu link (jika link mengandung koma)
           output += `
             <div class="data-item">
               <strong>${kode}</strong> - ${judul}<br>
@@ -41,12 +19,11 @@
             </div>
           `;
         }
-        document.getElementById("output").innerHTML = output;
-      })
-      .catch(err => {
-        document.getElementById("output").innerText = "Gagal memuat data.";
-        console.error(err);
-      });
-  </script>
-</body>
-</html>
+      }
+      document.getElementById("output").innerHTML = output || "Data kosong atau tidak terbaca.";
+    })
+    .catch(err => {
+      document.getElementById("output").innerText = "Gagal memuat data.";
+      console.error(err);
+    });
+</script>
