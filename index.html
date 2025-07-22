@@ -1,20 +1,52 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Cari Video ASETLINK</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ASETLINK DATA</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 100px; }
-    input, button { padding: 10px; font-size: 16px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #0f0;
+      padding: 20px;
+    }
+    h1 {
+      color: #0f0;
+    }
+    .data-item {
+      border-bottom: 1px solid #333;
+      padding: 8px 0;
+    }
   </style>
 </head>
 <body>
-  <h1>Cari Video Favoritmu</h1>
-  <input type="text" id="kodeInput" placeholder="Contoh: MIDE-777">
-  <button onclick="cariKode()">Cari</button>
-  <div id="hasil" style="margin-top:20px;"></div>
+  <h1>Data dari Google Sheet</h1>
+  <div id="output">Memuat data...</div>
 
-  <script src="script.js"></script>
+  <script>
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFl8lDZYVTd3xNTxxdDICGkP7BfRtZqwzxIUp1vmjQM-V4M7OdZmON3bOAFA-rwQW8UsGiHPxPBbqs/pub?output=csv";
+
+    fetch(csvUrl)
+      .then(response => response.text())
+      .then(data => {
+        const rows = data.split("\n").map(row => row.split(","));
+        let output = '';
+        for (let i = 1; i < rows.length; i++) {
+          const [kode, judul, link] = rows[i];
+          output += `
+            <div class="data-item">
+              <strong>${kode}</strong> - ${judul}<br>
+              <a href="${link}" target="_blank">${link}</a>
+            </div>
+          `;
+        }
+        document.getElementById("output").innerHTML = output;
+      })
+      .catch(err => {
+        document.getElementById("output").innerText = "Gagal memuat data.";
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
