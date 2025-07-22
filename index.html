@@ -1,130 +1,129 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>ASETLINK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background-color: black;
+      font-family: sans-serif;
+      background: #121212;
       color: white;
-      font-family: Arial, sans-serif;
-      margin: 0;
       padding: 0;
+      margin: 0;
+    }
+    .top-bar {
+      background: #ff3366;
       text-align: center;
-    }
-    header {
-      background-color: #111;
-      padding: 15px 10px;
-      border-bottom: 1px solid #444;
-    }
-    header a {
-      color: #00bfff;
-      text-decoration: none;
+      padding: 12px;
       font-weight: bold;
     }
-    h1 {
-      font-size: 22px;
-      margin: 15px 10px 5px;
+    .top-bar a {
+      color: white;
+      text-decoration: none;
+    }
+    .container {
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-top: 10px;
+    }
+    p.subtitle {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ccc;
     }
     input {
-      padding: 10px;
-      margin: 10px auto;
+      padding: 12px;
+      width: 100%;
       font-size: 16px;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 8px;
+      margin-bottom: 20px;
+      background: #222;
+      color: white;
       border: none;
+      border-radius: 5px;
+      box-sizing: border-box;
     }
     .result {
-      margin: 10px;
+      margin-top: 20px;
+    }
+    .item {
       padding: 10px;
-      border-bottom: 1px solid #444;
+      background: #1e1e1e;
+      margin-bottom: 10px;
+      border-left: 5px solid #00ffa2;
+      border-radius: 5px;
     }
-    .code {
-      color: white;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    .link {
-      color: #00bfff;
+    a {
+      color: #00ffa2;
       text-decoration: none;
-    }
-    .suggestion {
-      margin: 5px 0;
-      color: #ccc;
-      font-style: italic;
     }
   </style>
 </head>
 <body>
-  <header>
-    🔥 Update asupan 21+ terbaik hanya di 
-    <a href="TELEGRAM @ASETLINK" target="_blank">Telegram @asetlink</a>
-  </header>
 
-  <h1>Selamat datang di ASETLINK</h1>
-  <p>Ketik saja apapun judul video yang kamu cari di bawah ini</p>
-  <input type="text" id="search" placeholder="Contoh: JUL-001 atau Saeko"/>
+  <div class="top-bar">
+    Update asupan terbaik hanya di
+ <a href="https://t.me/asetlink" target="_blank">Telegram @ASETLINK</a>
+  </div>
 
-  <div id="results"></div>
+  <div class="container">
+    <h2>Selamat datang di ASETLINK</h2>
+    <p class="subtitle">Ketik saja apapun judul video yang kamu cari dibawah ini</p>
+
+    <input type="text" id="search" placeholder="ketik disini...">
+    <div class="result" id="result">Silahkan ketik saja, Video yang ingin kamu cari.</div>
+  </div>
 
   <script>
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfI4IEaPShTP6n4OK1PYlTIeAH3AsuLS32xMjsvPfYX3aGyzCsoJSdT3nhKvzX0Y9gu0p6ceqYFzYI/pub?output=tsv";
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFl8lDZYVTd3xNTxxdDICGkP7BfRtZqwzxIUp1vmjQM-V4M7OdZmON3bOAFA-rwQW8UsGiHPxPBbqs/pub?output=csv";
 
-    async function loadSheet() {
-      const response = await fetch(sheetURL);
-      const text = await response.text();
-      const rows = text.trim().split("\n").map(row => row.split("\t"));
-      return rows;
-    }
+    let data = [];
 
-    function search(keyword, data) {
-      const keywordLower = keyword.toLowerCase();
-      return data.filter(([title, link]) =>
-        title.toLowerCase().includes(keywordLower)
-      );
-    }
-
-    function renderResults(results, data, keyword) {
-      const container = document.getElementById("results");
-      container.innerHTML = "";
-
-      if (results.length === 0 && keyword.trim()) {
-        container.innerHTML = "<p>Judul tidak ditemukan. Mungkin maksudmu:</p>";
-        const suggestions = data
-          .filter(([title]) => title.toLowerCase().includes(keyword.toLowerCase().slice(0, 3)))
-          .slice(0, 5);
-        suggestions.forEach(([title]) => {
-          const s = document.createElement("div");
-          s.className = "suggestion";
-          s.innerText = title;
-          container.appendChild(s);
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.trim().split("\n").slice(1);
+        data = rows.map(row => {
+          const [judul, link] = row.split(",");
+          return { judul: judul.trim(), link: link.trim() };
         });
+      });
+
+    document.getElementById("search").addEventListener("input", function() {
+      const keyword = this.value.trim().toLowerCase();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = '';
+
+      if (keyword === '') {
+        resultDiv.innerHTML = 'Silakan ketik saja, video yang ingin kamu cari.';
         return;
       }
 
-      results.forEach(([title, link]) => {
-        const item = document.createElement("div");
-        item.className = "result";
-        item.innerHTML = `
-          <div class="code">${title}</div>
-          <a class="link" href="${link}" target="_blank">${link}</a>
-        `;
-        container.appendChild(item);
-      });
-    }
+      const found = data.filter(item =>
+        item.judul.toLowerCase().includes(keyword)
+      );
 
-    let allData = [];
-    document.getElementById("search").addEventListener("input", e => {
-      const keyword = e.target.value;
-      const results = search(keyword, allData);
-      renderResults(results, allData, keyword);
-    });
-
-    loadSheet().then(data => {
-      allData = data;
+      if (found.length > 0) {
+        found.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+          resultDiv.appendChild(div);
+        });
+      } else {
+        resultDiv.innerHTML = '<i>Tidak ditemukan. Rekomendasi:</i><br>';
+        const rekomendasi = data.slice(0, 5);
+        rekomendasi.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+          resultDiv.appendChild(div);
+        });
+      }
     });
   </script>
+
 </body>
 </html>
