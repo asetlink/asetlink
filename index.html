@@ -1,29 +1,70 @@
-<script>
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFl8lDZYVTd3xNTxxdDICGkP7BfRtZqwzxIUp1vmjQM-V4M7OdZmON3bOAFA-rwQW8UsGiHPxPBbqs/pub?output=csv";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Cari Kode</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    input {
+      padding: 10px;
+      font-size: 18px;
+      width: 300px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border: none;
+    }
+    #result {
+      font-size: 20px;
+      color: #0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cari Kode Video</h1>
+  <input type="text" id="search" placeholder="Masukkan kode (misal: ABP-123)" />
+  <div id="result">Menunggu input...</div>
 
-  fetch(csvUrl)
-    .then(response => response.text())
-    .then(text => {
-      const rows = text.trim().split("\n").slice(1); // Hilangkan header
-      let output = '';
-      for (const row of rows) {
-        const columns = row.split(",");
-        if (columns.length >= 3) {
-          const kode = columns[0];
-          const judul = columns[1];
-          const link = columns.slice(2).join(",").trim(); // Gabungkan sisa jadi satu link (jika link mengandung koma)
-          output += `
-            <div class="data-item">
-              <strong>${kode}</strong> - ${judul}<br>
-              <a href="${link}" target="_blank">${link}</a>
-            </div>
-          `;
-        }
+  <script>
+    const csvUrl = "https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vTJP0ECvwXf-WE0dUzqZ-kiXL3pAwZULAXeBBKDTEiRBOBWyS9vEnPbC6fi_R2Pl55pmQo8ZL4Lt9mE/pub?output=csv";
+
+    let database = [];
+
+    // Ambil data CSV
+    fetch(csvUrl)
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.trim().split('\n');
+        database = rows.map(row => row.split(','));
+      })
+      .catch(err => {
+        document.getElementById('result').innerText = "Gagal mengambil data.";
+        console.error(err);
+      });
+
+    // Fungsi pencarian
+    document.getElementById('search').addEventListener('input', () => {
+      const query = document.getElementById('search').value.trim().toUpperCase();
+      const resultDiv = document.getElementById('result');
+      if (!query) {
+        resultDiv.innerText = "Menunggu input...";
+        return;
       }
-      document.getElementById("output").innerHTML = output || "Data kosong atau tidak terbaca.";
-    })
-    .catch(err => {
-      document.getElementById("output").innerText = "Gagal memuat data.";
-      console.error(err);
+
+      const match = database.find(row => row[0].toUpperCase().includes(query));
+      if (match) {
+        resultDiv.innerHTML = `<b>${match[0]}</b><br><a href="${match[1]}" target="_blank" style="color:cyan">${match[1]}</a>`;
+      } else {
+        resultDiv.innerText = "Tidak ditemukan.";
+      }
     });
-</script>
+  </script>
+</body>
+</html>
