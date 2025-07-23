@@ -60,45 +60,42 @@
       text-decoration: none;
     }
 
-    /* === POPUP TELEGRAM === */
+    /* === BULATAN POPUP === */
     #popup {
       position: fixed;
       bottom: 20px;
-      right: 20px;
-      background: #0088cc;
+      left: 20px;
+      width: 120px;
+      height: 120px;
+      background-color: #0088cc;
       color: white;
-      padding: 15px 20px;
-      border-radius: 12px;
+      border-radius: 50%;
+      z-index: 9999;
+      cursor: move;
       box-shadow: 0 0 15px rgba(0,0,0,0.3);
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      font-size: 12px;
+      text-align: center;
+      padding: 10px;
+      flex-direction: column;
       animation: slideIn 0.5s ease;
-      z-index: 999;
     }
-    #popup img {
-      width: 24px;
-      height: 24px;
-    }
-    #popup a {
-      color: white;
-      font-weight: bold;
-      text-decoration: none;
-    }
-    #popup span {
+
+    #popup-close {
+      position: absolute;
+      top: 5px;
+      right: 10px;
       cursor: pointer;
-      margin-left: auto;
       font-weight: bold;
+      font-size: 16px;
+      color: white;
     }
+
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -114,14 +111,13 @@
     <p class="subtitle">Ketik saja apapun judul video yang kamu cari dibawah ini</p>
 
     <input type="text" id="search" placeholder="ketik disini...">
-    <div class="result" id="result">Silahkan ketik saja, Video yang ingin kamu cari.</div>
+    <div class="result" id="result">web akan menampilkan hasil yang terbaik untukmu.</div>
   </div>
 
-  <!-- === POPUP TELEGRAM === -->
+  <!-- === POPUP BULAT === -->
   <div id="popup">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
-    <a href="https://t.me/asetlink" target="_blank">Join Telegram</a>
-    <span onclick="document.getElementById('popup').style.display='none'">&#x2715;</span>
+    <div id="popup-close">&#x2715;</div>
+    <div>Join<br><a href="https://t.me/asetlink" target="_blank" style="color:white;font-weight:bold;">@ASETLINK</a></div>
   </div>
 
   <script>
@@ -171,7 +167,15 @@
         });
       }
     });
-  </script>
 
-</body>
-</html>
+    // ===== DRAG + CLOSE + REAPPEAR =====
+    const popup = document.getElementById("popup");
+    const popupClose = document.getElementById("popup-close");
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0;
+
+    popup.addEventListener("mousedown", function(e) {
+      isDragging = true;
+      offsetX = e.clientX - popup.getBoundingClientRect().left;
+      offsetY = e.clientY - popup.getBoundingClientRect().top;
+    });
