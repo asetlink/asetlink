@@ -1,87 +1,49 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>ASETLINK</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #000;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
-    }
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      font-size: 18px;
-      border-radius: 5px;
-      border: none;
-      margin-bottom: 20px;
-    }
-    .item {
-      background: #111;
-      border: 1px solid #333;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-    }
-    a {
-      color: #4ecdc4;
-      word-break: break-all;
-    }
-  </style>
-</head>
-<body>
-  <h1>ASETLINK 🔍</h1>
-  <input type="text" id="search" placeholder="Ketik kode atau judul...">
-  <div id="result">Silakan ketik saja, video yang ingin kamu cari.</div>
+<script>
+  const encodedURL = "aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXRzL2QvMXZTRmw4bERaWVZUZDN4TlR4eGRESUNna1A3QmZSdFpxd3p4SVVwMXZtalFNLVY0TTdPZFptT04zYk9BRkEtcndRVzhVc0dpSFB4UEJiYXMvcHViP291dHB1dD1jc3Y=";
+  const sheetURL = atob(encodedURL); // decode base64
 
-  <script>
-  (function() {
-    const u = atob("aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXRzL2QvMXZTRmw4bERaWVZUZDN4TlR4eGRESUNna1A3QmZSdFpxd3p4SVVwMXZtalFNLVY0TTdPZFptT04zYk9BRkEtcndRVzhVc0dpSFB4UEJiYXMvcHViP291dHB1dD1jc3Y=");
-    let d = [];
+  let data = [];
 
-    fetch(u)
-      .then(r => r.text())
-      .then(t => {
-        const l = t.trim().split("\n").slice(1);
-        d = l.map(i => {
-          const [j, k] = i.split(",");
-          return { j: j.trim(), k: k.trim() };
-        });
+  fetch(sheetURL)
+    .then(res => res.text())
+    .then(text => {
+      const rows = text.trim().split("\n").slice(1);
+      data = rows.map(row => {
+        const [judul, link] = row.split(",");
+        return { judul: judul.trim(), link: link.trim() };
       });
-
-    document.getElementById("search").addEventListener("input", function() {
-      const kw = this.value.trim().toLowerCase();
-      const r = document.getElementById("result");
-      r.innerHTML = '';
-
-      if (kw === '') {
-        r.innerHTML = 'Silakan ketik saja, video yang ingin kamu cari.';
-        return;
-      }
-
-      const f = d.filter(i => i.j.toLowerCase().includes(kw));
-      if (f.length > 0) {
-        f.forEach(i => {
-          const div = document.createElement("div");
-          div.className = "item";
-          div.innerHTML = `<strong>${i.j}</strong><br><a href="${i.k}" target="_blank">${i.k}</a>`;
-          r.appendChild(div);
-        });
-      } else {
-        r.innerHTML = '<i>Tidak ditemukan. Rekomendasi:</i><br>';
-        const rec = d.slice(0, 5);
-        rec.forEach(i => {
-          const div = document.createElement("div");
-          div.className = "item";
-          div.innerHTML = `<strong>${i.j}</strong><br><a href="${i.k}" target="_blank">${i.k}</a>`;
-          r.appendChild(div);
-        });
-      }
     });
-  })();
-  </script>
-</body>
-</html>
+
+  document.getElementById("search").addEventListener("input", function () {
+    const keyword = this.value.trim().toLowerCase();
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = '';
+
+    if (keyword === '') {
+      resultDiv.innerHTML = 'Silakan ketik saja, video yang ingin kamu cari.';
+      return;
+    }
+
+    const found = data.filter(item =>
+      item.judul.toLowerCase().includes(keyword)
+    );
+
+    if (found.length > 0) {
+      found.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+        resultDiv.appendChild(div);
+      });
+    } else {
+      resultDiv.innerHTML = '<i>Tidak ditemukan. Rekomendasi:</i><br>';
+      const rekomendasi = data.slice(0, 5);
+      rekomendasi.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+        resultDiv.appendChild(div);
+      });
+    }
+  });
+</script>
