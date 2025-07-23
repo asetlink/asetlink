@@ -60,42 +60,46 @@
       text-decoration: none;
     }
 
-    /* === BULATAN POPUP === */
+    /* === POPUP TELEGRAM === */
     #popup {
       position: fixed;
       bottom: 20px;
       left: 20px;
-      width: 120px;
-      height: 120px;
-      background-color: #0088cc;
+      background: #0088cc;
       color: white;
-      border-radius: 50%;
-      z-index: 9999;
-      cursor: move;
+      padding: 10px 15px;
+      border-radius: 10px;
       box-shadow: 0 0 15px rgba(0,0,0,0.3);
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      text-align: center;
-      padding: 10px;
-      flex-direction: column;
+      gap: 8px;
       animation: slideIn 0.5s ease;
+      z-index: 999;
+      font-size: 14px;
     }
-
-    #popup-close {
-      position: absolute;
-      top: 5px;
-      right: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
+    #popup img {
+      width: 20px;
+      height: 20px;
+    }
+    #popup a {
       color: white;
+      font-weight: bold;
+      text-decoration: none;
     }
-
+    #popup span {
+      cursor: pointer;
+      margin-left: auto;
+      font-weight: bold;
+    }
     @keyframes slideIn {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
@@ -111,13 +115,14 @@
     <p class="subtitle">Ketik saja apapun judul video yang kamu cari dibawah ini</p>
 
     <input type="text" id="search" placeholder="ketik disini...">
-    <div class="result" id="result">web akan menampilkan hasil yang terbaik untukmu.</div>
+    <div class="result" id="result">Web akan otomatis menampilkan hasilnya untukmu.</div>
   </div>
 
-  <!-- === POPUP BULAT === -->
+  <!-- === POPUP TELEGRAM === -->
   <div id="popup">
-    <div id="popup-close">&#x2715;</div>
-    <div>Join<br><a href="https://t.me/asetlink" target="_blank" style="color:white;font-weight:bold;">@ASETLINK</a></div>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+    <a href="https://t.me/asetlink" target="_blank">Join Telegram</a>
+    <span id="popup-close">&#x2715;</span>
   </div>
 
   <script>
@@ -141,7 +146,7 @@
       resultDiv.innerHTML = '';
 
       if (keyword === '') {
-        resultDiv.innerHTML = 'Silakan ketik saja, video yang ingin kamu cari.';
+        resultDiv.innerHTML = 'Web akan otomatis menampilkan hasilnya untukmu.';
         return;
       }
 
@@ -168,14 +173,17 @@
       }
     });
 
-    // ===== DRAG + CLOSE + REAPPEAR =====
+    // Popup auto show after 15 seconds
     const popup = document.getElementById("popup");
     const popupClose = document.getElementById("popup-close");
-    let isDragging = false;
-    let offsetX = 0, offsetY = 0;
 
-    popup.addEventListener("mousedown", function(e) {
-      isDragging = true;
-      offsetX = e.clientX - popup.getBoundingClientRect().left;
-      offsetY = e.clientY - popup.getBoundingClientRect().top;
+    popupClose.addEventListener("click", () => {
+      popup.style.display = "none";
+      setTimeout(() => {
+        popup.style.display = "flex";
+      }, 15000);
     });
+  </script>
+
+</body>
+</html>
