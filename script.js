@@ -3,44 +3,44 @@ const jsonUrl = "https://opensheet.elk.sh/11S6QacPmz_w92u4U-ZdpKwHjZF6z8-JcqZkWG
 let data = [];
 
 async function fetchData() {
-  const response = await fetch(jsonUrl);
-  const json = await response.json();
-  data = json.map(item => ({
-    kode: item.JUDUL?.trim(),
-    link: item.LINK?.trim()
-  }));
+  try {
+    const response = await fetch(jsonUrl);
+    data = await response.json();
+  } catch (err) {
+    document.getElementById('result').textContent = "Gagal ambil data.";
+    console.error(err);
+  }
 }
 
-function searchKode(kodeInput) {
-  return data.filter(entry =>
-    entry.kode.toLowerCase().includes(kodeInput.toLowerCase())
-  );
+function renderResults(results) {
+  const resultDiv = document.getElementById('result');
+  resultDiv.innerHTML = '';
+  if (results.length === 0) {
+    resultDiv.textContent = 'Tidak ditemukan.';
+  } else {
+    results.forEach(item => {
+      const a = document.createElement('a');
+      const judul = item.JUDUL || item.judul || item.kode || '';
+      const link = item.LINK || item.link || '';
+      a.href = link;
+      a.textContent = judul;
+      a.target = '_blank';
+      resultDiv.appendChild(a);
+    });
+  }
+}
+
+function onSearch() {
+  const query = document.getElementById('kodeInput').value.trim().toLowerCase();
+  const filtered = data.filter(item => {
+    const judul = (item.JUDUL || item.judul || item.kode || '').toLowerCase();
+    return judul.includes(query);
+  });
+  renderResults(filtered);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchData();
-
-  const form = document.getElementById('searchForm');
   const input = document.getElementById('kodeInput');
-  const resultDiv = document.getElementById('result');
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const query = input.value.trim();
-    const results = searchKode(query);
-    resultDiv.innerHTML = '';
-
-    if (results.length > 0) {
-      results.forEach(item => {
-        const link = document.createElement('a');
-        link.href = item.link;
-        link.textContent = item.kode;
-        link.target = '_blank';
-        resultDiv.appendChild(link);
-        resultDiv.appendChild(document.createElement('br'));
-      });
-    } else {
-      resultDiv.textContent = 'Kode tidak ditemukan.';
-    }
-  });
+  input.addEventListener('input', onSearch);  // Real-time search
 });
