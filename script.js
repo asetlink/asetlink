@@ -9,7 +9,7 @@ async function fetchData() {
     const response = await fetch(sheetURL);
     const json = await response.json();
 
-    // Simpan data
+    // Simpan data dengan kolom JUDUL & LINK
     data = json.map(item => ({
       judul: item.JUDUL?.trim() || "",
       link: item.LINK?.trim() || ""
@@ -24,6 +24,7 @@ async function fetchData() {
 
 // === FUNGSI PENCARIAN ===
 function searchKode(query) {
+  if (!query) return [];
   return data.filter(entry =>
     entry.judul.toLowerCase().includes(query.toLowerCase())
   );
@@ -44,7 +45,7 @@ function renderResults(results, resultDiv) {
   } else {
     resultDiv.innerHTML = "<i>❌ Tidak ditemukan. Rekomendasi:</i><br>";
 
-    // ambil 5 rekomendasi teratas
+    // tampilkan 5 rekomendasi teratas
     const rekomendasi = data.slice(0, 5);
     rekomendasi.forEach(item => {
       const div = document.createElement("div");
@@ -72,7 +73,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderResults(results, resultDiv);
   });
 
-  // Pencarian realtime saat mengetik
+  // Pencarian realtime (langsung saat mengetik)
   input.addEventListener("input", () => {
     const query = input.value.trim();
     const results = searchKode(query);
