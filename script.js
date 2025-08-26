@@ -1,46 +1,60 @@
-const jsonUrl = "https://opensheet.elk.sh/11S6QacPmz_w92u4U-ZdpKwHjZF6z8-JcqZkWGHrVoCI/Sheet1";
+<script>
+  const sheetURL = "https://opensheet.elk.sh/11S6QacPmz_w92u4U-ZdpKwHjZF6z8-JcqZkWGHrVoCI/Sheet1";
 
-let data = [];
+  let data = [];
 
-async function fetchData() {
-  try {
-    const response = await fetch(jsonUrl);
-    data = await response.json();
-  } catch (err) {
-    document.getElementById('result').textContent = "Gagal ambil data.";
-    console.error(err);
-  }
-}
-
-function renderResults(results) {
-  const resultDiv = document.getElementById('result');
-  resultDiv.innerHTML = '';
-  if (results.length === 0) {
-    resultDiv.textContent = 'Tidak ditemukan.';
-  } else {
-    results.forEach(item => {
-      const a = document.createElement('a');
-      const judul = item.JUDUL || item.judul || item.kode || '';
-      const link = item.LINK || item.link || '';
-      a.href = link;
-      a.textContent = judul;
-      a.target = '_blank';
-      resultDiv.appendChild(a);
+  // Ambil data JSON dari OpenSheet
+  fetch(sheetURL)
+    .then(res => res.json())
+    .then(json => {
+      // Sesuaikan dengan nama kolom di Sheet kamu (misal: Judul, Link)
+      data = json.map(row => ({
+        judul: row.Judul?.trim() || "",
+        link: row.Link?.trim() || ""
+      }));
     });
-  }
-}
 
-function onSearch() {
-  const query = document.getElementById('kodeInput').value.trim().toLowerCase();
-  const filtered = data.filter(item => {
-    const judul = (item.JUDUL || item.judul || item.kode || '').toLowerCase();
-    return judul.includes(query);
+  document.getElementById("search").addEventListener("input", function() {
+    const keyword = this.value.trim().toLowerCase();
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = '';
+
+    if (keyword === '') {
+      resultDiv.innerHTML = 'Web akan otomatis menampilkan hasilnya untukmu.';
+      return;
+    }
+
+    const found = data.filter(item =>
+      item.judul.toLowerCase().includes(keyword)
+    );
+
+    if (found.length > 0) {
+      found.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+        resultDiv.appendChild(div);
+      });
+    } else {
+      resultDiv.innerHTML = '<i>Tidak ditemukan. Rekomendasi:</i><br>';
+      const rekomendasi = data.slice(0, 5);
+      rekomendasi.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
+        resultDiv.appendChild(div);
+      });
+    }
   });
-  renderResults(filtered);
-}
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await fetchData();
-  const input = document.getElementById('kodeInput');
-  input.addEventListener('input', onSearch);  // Real-time search
-});
+  // Popup auto show after 15 seconds
+  const popup = document.getElementById("popup");
+  const popupClose = document.getElementById("popup-close");
+
+  popupClose.addEventListener("click", () => {
+    popup.style.display = "none";
+    setTimeout(() => {
+      popup.style.display = "flex";
+    }, 15000);
+  });
+</script>
