@@ -1,60 +1,58 @@
-<script>
-  const sheetURL = "https://opensheet.elk.sh/11S6QacPmz_w92u4U-ZdpKwHjZF6z8-JcqZkWGHrVoCI/Sheet1";
+// === KONFIGURASI ===
+const sheetURL = "https://opensheet.elk.sh/11S6QacPmz_w92u4U-ZdpKwHjZF6z8-JcqZkWGHrVoCI/Sheet1";
+let data = [];
 
-  let data = [];
+// === AMBIL DATA DARI GOOGLE SHEET (JSON via OpenSheet) ===
+async function fetchData() {
+  try {
+    const response = await fetch(sheetURL);
+    const json = await response.json();
 
-  // Ambil data JSON dari OpenSheet
-  fetch(sheetURL)
-    .then(res => res.json())
-    .then(json => {
-      // Sesuaikan dengan nama kolom di Sheet kamu (misal: Judul, Link)
-      data = json.map(row => ({
-        judul: row.Judul?.trim() || "",
-        link: row.Link?.trim() || ""
-      }));
-    });
+    // Simpan data
+    data = json.map(item => ({
+      judul: item.JUDUL?.trim() || "",
+      link: item.LINK?.trim() || ""
+    }));
 
-  document.getElementById("search").addEventListener("input", function() {
-    const keyword = this.value.trim().toLowerCase();
-    const resultDiv = document.getElementById("result");
-    resultDiv.innerHTML = '';
+    console.log("✅ Data berhasil dimuat:", data);
+  } catch (err) {
+    console.error("❌ Gagal memuat data:", err);
+    document.getElementById("result").innerText = "Gagal memuat data.";
+  }
+}
 
-    if (keyword === '') {
-      resultDiv.innerHTML = 'Web akan otomatis menampilkan hasilnya untukmu.';
-      return;
-    }
+// === FUNGSI PENCARIAN ===
+function searchKode(query) {
+  return data.filter(entry =>
+    entry.judul.toLowerCase().includes(query.toLowerCase())
+  );
+}
 
-    const found = data.filter(item =>
-      item.judul.toLowerCase().includes(keyword)
-    );
+// === EVENT LISTENER ===
+document.addEventListener("DOMContentLoaded", async () => {
+  await fetchData();
 
-    if (found.length > 0) {
-      found.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
-        resultDiv.appendChild(div);
+  const form = document.getElementById("searchForm");
+  const input = document.getElementById("kodeInput");
+  const resultDiv = document.getElementById("result");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const query = input.value.trim();
+    const results = searchKode(query);
+    resultDiv.innerHTML = "";
+
+    if (results.length > 0) {
+      results.forEach(item => {
+        const link = document.createElement("a");
+        link.href = item.link;
+        link.textContent = item.judul;
+        link.target = "_blank";
+        resultDiv.appendChild(link);
+        resultDiv.appendChild(document.createElement("br"));
       });
     } else {
-      resultDiv.innerHTML = '<i>Tidak ditemukan. Rekomendasi:</i><br>';
-      const rekomendasi = data.slice(0, 5);
-      rekomendasi.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `<strong>${item.judul}</strong><br><a href="${item.link}" target="_blank">${item.link}</a>`;
-        resultDiv.appendChild(div);
-      });
+      resultDiv.textContent = "❌ Tidak ditemukan. Rekomendasi:";
     }
   });
-
-  // Popup auto show after 15 seconds
-  const popup = document.getElementById("popup");
-  const popupClose = document.getElementById("popup-close");
-
-  popupClose.addEventListener("click", () => {
-    popup.style.display = "none";
-    setTimeout(() => {
-      popup.style.display = "flex";
-    }, 15000);
-  });
-</script>
+});
