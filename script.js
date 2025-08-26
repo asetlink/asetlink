@@ -1,22 +1,20 @@
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFl8lDZYVTd3xNTxxdDICGkP7BfRtZqwzxIUp1vmjQM-V4M7OdZmON3bOAFA-rwQW8UsGiHPxPBbqs/pub?output=csv";
+const jsonUrl = "https://opensheet.elk.sh/11S6QacPmz_w92u4U-ZdpKwHjZF6z8-JcqZkWGHrVoCI/Sheet1";
+
 let data = [];
 
 async function fetchData() {
-  const response = await fetch(csvUrl);
-  const text = await response.text();
-  const rows = text.split('\n').map(row => row.split(','));
-  // Asumsikan header: KODE, LINK
-  data = rows.slice(1).map(row => ({
-    kode: row[0]?.trim(),
-    link: row[1]?.trim()
+  const response = await fetch(jsonUrl);
+  const json = await response.json();
+  data = json.map(item => ({
+    kode: item.JUDUL?.trim(),
+    link: item.LINK?.trim()
   }));
 }
 
 function searchKode(kodeInput) {
-  const results = data.filter(entry => 
+  return data.filter(entry =>
     entry.kode.toLowerCase().includes(kodeInput.toLowerCase())
   );
-  return results;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
